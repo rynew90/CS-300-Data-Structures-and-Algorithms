@@ -1,0 +1,188 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <stdio.h>
+#include <sstream>
+#include <algorithm>
+
+using namespace std;
+using std::cout;
+using std::cin;
+
+struct Info {
+	string courseNum;
+	string courseName;
+	string prerequisites;
+};
+
+class CoursesVector {
+private:
+	struct Node {
+		Info course;
+	};
+
+	int file_length = 0;
+
+public:
+	CoursesVector();
+	virtual ~CoursesVector();
+	vector<string> CourseInfo;
+	void CourseParser(Info course);
+	void getCourses();
+	void printCourseInformation();
+	int Size();
+};
+
+//Default Constructor
+CoursesVector::CoursesVector() {
+
+	int file_length = 0;
+}
+
+//Destructor
+CoursesVector::~CoursesVector() {
+	
+}
+
+int CoursesVector::Size() {
+
+	ifstream file("Course_Info.txt", ios::in);
+
+	string file_size;
+
+	while (getline(file, file_size)) {
+		++file_length;
+	}
+	
+	return file_length;
+}
+//Opens file and parses through entries to check formatting
+void CoursesVector::CourseParser(Info course) {
+
+	ifstream Course_File;
+	string file_name = "";
+
+	cout << "File to Load: " << endl;
+	cin >> file_name;
+	Course_File.open(file_name, ios::in);
+
+	if (!Course_File) {//checks to make sure file exists
+		cout << "File not found!" << endl;
+	}
+
+	else {
+		string String;
+
+		while (getline(Course_File, String)) {//while file contains line of strings
+			int string_length = String.size();//gets length of string
+			int words = 0;
+
+			for (int i = 0; i < string_length; i++) {//for length of string
+				if (String[i] == ',') {//if comma is present, add 1 to word count
+					words++;
+				}
+			}
+			words = words + 1;
+
+			if (words < 2) {//if less than 2 items in line, error check
+				cout << "File Contains Incomplete Course Information!" << endl;
+				cout << endl;
+			}
+
+			else {
+				CourseInfo.push_back(String);//input data into vector						
+			}
+		}
+		cout << endl;
+		cout << "File successfully loaded!" << endl;
+		cout << endl;
+	}
+}
+//Sorts course list and prints all courses
+void CoursesVector::getCourses() {
+
+	sort(CourseInfo.begin(), CourseInfo.end());//sorts CourseInfo vector in alphanumeric order
+
+	for (int i = 0; i < CourseInfo.size(); i++) {//for all elements in CourseInfo vector
+		cout << CourseInfo[i] << endl;
+	}
+	cout << endl;
+}
+//searches for user input match and prints relevant course information
+void CoursesVector::printCourseInformation() {
+	string courseNumber = "";
+	string course, c;
+	bool verify = false;
+
+	cout << "What course do you want to know about?" << endl;
+	cin >> courseNumber;
+	transform(courseNumber.begin(), courseNumber.end(), courseNumber.begin(), ::toupper);//sets all letters to uppercase
+
+	for (int i = 0; i < CourseInfo.size(); i++) {//for all items in CourseInfo vector
+
+		stringstream ss(CourseInfo[i]);
+		getline(ss, course, ',');//removes characters after first "," for searching
+
+		if (course.compare(courseNumber) == 0) {//if user input matches course in vector
+			cout << endl;
+			cout << CourseInfo[i] << endl;
+			cout << endl;
+			verify = true;
+		}
+	}
+	
+	if (!verify) {
+		cout << endl;
+		cout << "Course Does Not Exist!" << endl;
+		cout << endl;
+	}
+	
+}
+
+int main(int argc, char* argv[]) {
+
+	CoursesVector courseList;
+	Info course;
+	courseList.Size();
+
+	int userChoice = 0;
+	while (userChoice != 4) {
+		cout << "Main Menu:" << endl;
+		cout << "  1. Load Data Structure" << endl;
+		cout << "  2. Print Course List" << endl;
+		cout << "  3. Print Course" << endl;
+		cout << "  4. Exit" << endl;
+		cout << endl;
+
+		cout << "What would you like to do? ";
+		cin >> userChoice;
+
+		switch (userChoice) {
+		case 1:
+			courseList.CourseParser(course);
+
+			break;
+
+		case 2:
+			cout << "Here is a sample schedule:" << endl;
+			cout << endl;
+			courseList.getCourses();
+
+			break;
+
+		case 3:
+			courseList.printCourseInformation();
+
+			break;
+
+		default:
+			cout << endl << userChoice << " is not a valid option." << endl;
+			cout << endl;
+		}
+	}
+
+	cout << "Thank you for using the course planner!" << endl;
+
+	return 0;
+}
